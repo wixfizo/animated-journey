@@ -45,11 +45,11 @@ class CopticInputService : InputMethodService(), KeyboardView.OnKeyboardActionLi
         }
     }
 
-    override fun onPress(primaryCode: Int) {}
-    override fun onRelease(primaryCode: Int) {}
-    override fun onText(text: CharSequence?) {}
-    override fun swipeLeft() {}
-    override fun swipeRight() {}
-    override fun swipeDown() {}
-    override fun swipeUp() {}
+    override fun onPress(primaryCode: Int) = Unit
+    override fun onRelease(primaryCode: Int) = Unit
+    override fun onText(text: CharSequence?) = Unit
+    override fun swipeLeft() = Unit
+    override fun swipeRight() = Unit
+    override fun swipeDown() = Unit
+    override fun swipeUp() = Unit
 }

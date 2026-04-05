@@ -28,20 +28,20 @@ PRG="$0"
 # Need this for relative symlinks.
 while [ -h "$PRG" ] ; do
     ls -ld "$PRG"
-    link=$(expr "$PRG" : '.*-> \(.*\)$')
+    link=`expr "$PRG" : '.*-> \(.*\)$'`
     if expr "$link" : '/.*' > /dev/null; then
         PRG="$link"
     else
-        PRG=$(dirname "$PRG")"/$link"
+        PRG=`dirname "$PRG"`"/$link"
     fi
 done
-SAVED="$(pwd)"
-cd "$(dirname "$PRG")"/ >/dev/null
-APP_HOME="$(pwd -P)"
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/" >/dev/null
+APP_HOME="`pwd -P`"
 cd "$SAVED" >/dev/null
 
 APP_NAME="Gradle"
-APP_BASE_NAME=$(basename "$0")
+APP_BASE_NAME=`basename "$0"`
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
@@ -65,7 +65,7 @@ cygwin=false
 msys=false
 darwin=false
 nonstop=false
-case "$( uname )" in
+case "`uname`" in
   CYGWIN* )
     cygwin=true
     ;;
@@ -87,11 +87,69 @@ if [ -n "$JAVA_HOME" ] ; then
     if [ -x "$JAVA_HOME/bin/java" ] ; then
         JAR_FILE="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
         if [ ! -f "$JAR_FILE" ]; then
-            # Download gradle wrapper if not exists
-            mkdir -p "$APP_HOME/gradle/wrapper"
-            curl -sSL "$(grep distributionUrl $APP_HOME/gradle/wrapper/gradle-wrapper.properties | cut -d= -f2)" -o "$JAR_FILE"
+            JAR_FILE="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
         fi
+        JAVA_CMD="$JAVA_HOME/bin/java"
+    else
+        JAVA_CMD="java"
+    fi
+else
+    JAVA_CMD="java"
+fi
+
+# Increase the maximum file descriptors if we can.
+if [ "$cygwin" = "false" -a "$darwin" = "false" -a "$nonstop" = "false" ] ; then
+    MAX_FD_LIMIT=`ulimit -H -n`
+    if [ $? -eq 0 ] ; then
+        if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
+            MAX_FD="$MAX_FD_LIMIT"
+        fi
+        ulimit -n $MAX_FD
+        if [ $? -ne 0 ] ; then
+            warn "Could not set maximum file descriptor limit: $MAX_FD"
+        fi
+    else
+        warn "Could not query maximum file descriptor limit: $MAX_FD_LIMIT"
     fi
 fi
 
-exec gradle "$@"
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin ; then
+    APP_HOME=`cygpath --path --mixed "$APP_HOME"`
+    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
+    JAVACMD=`cygpath --unix "$JAVACMD"`
+    # We build the pattern for arguments to be converted via cygpath
+    ROOTDIRSRAW=`find -L / -maxdepth 2 -name .gradle -o -name java.exe -o -name javaw.exe 2>/dev/null`
+    SEP=""
+    for dir in $ROOTDIRSRAW
+    do
+        ROOTDIR1="$dir"
+        SEP=":"
+    done
+    # Add a user-defined pattern to the cygpath arguments
+    if [ "$GRADLE_CYGPATTERN" != "" ] ; then
+        OURCYGPATTERN="$OURCYGPATTERN|($GRADLE_CYGPATTERN)"
+    fi
+    # Now convert the arguments - kludge to limit ourselves to /bin/sh
+    i=0
+    for arg in "$@" ; do
+        CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
+        CHECK2=`echo "$arg"|egrep -c "^-"`                                 ### Determine if an option
+        if [ $CHECK -ne 0 ] && [ $CHECK2 -eq 0 ] ; then                    ### Added a condition
+            arg=`cygpath --path --unix "$arg"`
+        fi
+        CLASSPATH="$CLASSPATH:$arg"
+    done
+fi
+
+# Escape application args
+save () {
+    for i do printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/" ; done
+    echo " "
+}
+APP_ARGS=`save "$@"`
+
+# Collect all arguments for the java command, following the shell quoting and substitution rules
+eval "set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS \"\$APP_CLASSPATH\" -classpath \"$CLASSPATH\" org.gradle.wrapper.GradleWrapperMain \"$APP_ARGS\""
+
+exec "$JAVA_CMD" "$@"
