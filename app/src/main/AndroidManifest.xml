@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.coptickeyboard">
 
+    <uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
+
     <application
         android:label="Coptic Keyboard"
         android:allowBackup="true"
